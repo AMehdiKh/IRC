@@ -6,7 +6,7 @@
 #    By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 19:26:10 by ael-khel          #+#    #+#              #
-#    Updated: 2024/07/22 19:27:05 by ael-khel         ###   ########.fr        #
+#    Updated: 2024/08/15 07:44:12 by ael-khel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,25 +17,24 @@ SRC_DIR = src
 
 OBJ_DIR = objs
 
-FILES = main
+FILES = main Server Epoll Client
 
 SRCS = ${addsuffix .cpp, $(FILES)}
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 
-HEADERS = 
+HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp
 ################################################################################
 CC = c++
 
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
-
 ################################################################################
 
 .PHONY: clean
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(OBJS) -o $@ -fsanitize=address -static-libsan
+	$(CC) $(OBJS) -o $@ -fsanitize=address -static-libasan
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)

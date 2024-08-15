@@ -6,19 +6,18 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 19:28:05 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/07/27 23:27:36 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/15 07:38:52 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <string>
+#include "../include/Server.hpp"
 
-void	handleArguments( int argc, char **argv )
+void	handleArguments( int argc, char **argv, int &port, std::string &password )
 {
-	int			port;
-	std::string	password;
-
 	// check if user entered two arguments
 	if ( argc != 3 )
 		throw ( std::invalid_argument("Error: it must be run as follows:\n\t./ircserv <port> <password>\n") );
@@ -38,8 +37,14 @@ void	handleArguments( int argc, char **argv )
 
 int	main( int argc, char **argv )
 {
+	int			port;
+	std::string	password;
+
 	try {
-		handleArguments( argc, argv );
+		handleArguments( argc, argv, port, password);
+		Server	server(port, password);
+		server.initServer();
+		server.run();
 	}
 	catch ( const std::exception &error ) {
 		std::cerr << error.what();
