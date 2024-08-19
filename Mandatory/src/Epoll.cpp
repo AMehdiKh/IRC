@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/02 07:41:16 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/15 07:43:53 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/19 07:42:41 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,6 @@ void	Epoll::add( int fd, uint32_t events )
 	event.events = events;
 	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, fd, &event) < 0)
 		throw std::runtime_error("Error: Failed to add file descriptor to epoll. Please try again!");
-}
-
-void	Epoll::modify( int fd, uint32_t events )
-{
-	struct epoll_event event;
-
-	event.data.fd = fd;
-	event.events = events;
-	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_MOD, fd, &event) < 0)
-		throw std::runtime_error("Error: Failed to modify file descriptor in epoll. Please try again!");
-
 }
 
 void	Epoll::remove( int fd )

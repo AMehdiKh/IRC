@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 01:47:20 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/15 07:39:24 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/19 07:42:53 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ class Epoll	{
 		~Epoll( );
 
 		void							add( int fd, uint32_t events );
-		void							modify( int fd, uint32_t events );
 		void							remove( int fd );
 		std::vector<struct epoll_event>	wait( void );
 

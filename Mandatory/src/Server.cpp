@@ -6,11 +6,16 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/15 07:26:01 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/19 09:27:25 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
+#include <locale>
+#include <map>
+#include <string>
+#include <sys/socket.h>
+#include <vector>
 
 Server::Server( int port, std::string password ) : _port(port), _password(password)
 {
@@ -48,42 +53,61 @@ void	Server::initServer( void )
 
 void	Server::run( void )
 {
-	Epoll							epoll;
 	std::vector<struct epoll_event>	events;
-	char							buffer[4096] = {0};
 
-	epoll.add(this->_server_fd, EPOLLIN);
+	this->_epoll.add(this->_server_fd, EPOLLIN);
 	while (true)
 	{
-		events = epoll.wait();
+		events = this->_epoll.wait();
 		for (std::vector<struct epoll_event>::iterator event = events.begin(); event != events.end(); ++event)
 		{
 			if (event->data.fd == this->_server_fd)
-			{
-				Client	*client;
-
-				if ((client = this->acceptConnection()) == NULL)
-					continue ;
-				epoll.add(client->getClientFD(), EPOLLIN | EPOLLRDHUP | EPOLLHUP);
-				this->_clients[client->getClientFD()] = client;
-			}
+				this->acceptConnection();
 			else
 			{
 				if (event->events & (EPOLLRDHUP | EPOLLHUP))
 				{
-					epoll.remove(event->data.fd);
+					this->_epoll.remove( event->data.fd );
 					this->removeClient( event->data.fd );
 				}
 				else
 				{
-					if (recv(event->data.fd, buffer, sizeof(buffer), 0) < 0)
+					char	messageBuffer[BUFFER_SIZE] = { 0 };
+
+					if (recv(event->data.fd, messageBuffer, sizeof(messageBuffer), 0) < 0)
 						if (errno != EAGAIN && errno != EWOULDBLOCK)
 							throw ( std::runtime_error("Error: Failed to receive data. Please try again!\n") );
-					std::cout << buffer << std::endl;
+					// std::cout << messageBuffer << "######[end]######\n";
+					this->_clients[event->data.fd]->parseMessages(messageBuffer);
+					this->handleCommands(*this->_clients[event->data.fd]);
 				}
 			}
 		}
 	}
+}
+
+void	Server::handleCommands( const Client &client )
+{
+	Messages	messages(client.getMessages());
+	
+	for (Messages::iterator it(messages.begin()); it != messages.end(); ++it)
+	{
+		if (it->first == "CAP")
+			continue;
+		else if (it->first == "PASS")
+			this->pass(client);
+		else if (it->first == "NICK")
+			this->nick(client);
+		else if (it->first == "USER")
+			this->user(client);
+		else
+			// sent error ERR_UNKNOWNCOMMAND (421) unknown command
+	}
+}
+
+void	Server::pass( const Client &client )
+{
+	
 }
 
 void	Server::removeClient( int fd )
@@ -92,9 +116,8 @@ void	Server::removeClient( int fd )
 	this->_clients.erase(this->_clients.find(fd));
 }
 
-Client*	Server::acceptConnection( void )
+void	Server::acceptConnection( void )
 {
-	Client				*client;
 	int					client_fd;
 	struct sockaddr_in	addr;
 	socklen_t			addrSize;
@@ -104,8 +127,8 @@ Client*	Server::acceptConnection( void )
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 			throw ( std::runtime_error("Error: Failed to accept incoming connection. Please try again!\n") );
-		return ( NULL );
+		return ;
 	}
-	client = new Client( client_fd, inet_ntoa(addr.sin_addr) );
-	return (client);
+	this->_epoll.add(client_fd, EPOLLIN | EPOLLRDHUP | EPOLLHUP);
+	this->_clients[client_fd] = new Client( client_fd, inet_ntoa(addr.sin_addr) );
 }

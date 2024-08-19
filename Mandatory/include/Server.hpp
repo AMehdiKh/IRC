@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/15 07:43:26 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/19 07:54:28 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,13 @@
 #include "Client.hpp"
 #include <cerrno>
 
+#define BUFFER_SIZE 4096
+
 class	Server {
 
 	private	:
 
+		Epoll						_epoll;
 		int							_port;
 		std::string					_password;
 		int							_server_fd;
@@ -40,6 +43,11 @@ class	Server {
 
 		void	initServer( void );
 		void	run( void );
-		Client*	acceptConnection( void );
+		void	acceptConnection( void );
 		void	removeClient( int );
+		void	handleCommands( const Client & );
+
+		void	pass( const Client & );
+		
+		
 };
