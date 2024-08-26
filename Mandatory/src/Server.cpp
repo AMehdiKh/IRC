@@ -6,29 +6,29 @@
 /*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/19 09:27:25 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/25 16:04:55 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
+#include <cstring>
+#include <ctime>
 #include <locale>
 #include <map>
 #include <string>
 #include <sys/socket.h>
 #include <vector>
 
-Server::Server( int port, std::string password ) : _port(port), _password(password)
+Server::Server( int port, std::string password ) : _port(port), _password(password), _creationTime(time(NULL))
 {
 	
 }
 
 Server::~Server( )
 {
-	std::map<int, Client*>::iterator	it;
-	close( this->_server_fd );
-	for (it = this->_clients.begin(); it != this->_clients.end(); ++it)
+	for (ClientsMap::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
 		delete it->second;
-		
+	close( this->_server_fd );
 }
 
 void	Server::initServer( void )
@@ -51,70 +51,14 @@ void	Server::initServer( void )
 		throw ( std::runtime_error("Error: Failed to listen on server socket. Please try again!\n") );
 }
 
-void	Server::run( void )
-{
-	std::vector<struct epoll_event>	events;
-
-	this->_epoll.add(this->_server_fd, EPOLLIN);
-	while (true)
-	{
-		events = this->_epoll.wait();
-		for (std::vector<struct epoll_event>::iterator event = events.begin(); event != events.end(); ++event)
-		{
-			if (event->data.fd == this->_server_fd)
-				this->acceptConnection();
-			else
-			{
-				if (event->events & (EPOLLRDHUP | EPOLLHUP))
-				{
-					this->_epoll.remove( event->data.fd );
-					this->removeClient( event->data.fd );
-				}
-				else
-				{
-					char	messageBuffer[BUFFER_SIZE] = { 0 };
-
-					if (recv(event->data.fd, messageBuffer, sizeof(messageBuffer), 0) < 0)
-						if (errno != EAGAIN && errno != EWOULDBLOCK)
-							throw ( std::runtime_error("Error: Failed to receive data. Please try again!\n") );
-					// std::cout << messageBuffer << "######[end]######\n";
-					this->_clients[event->data.fd]->parseMessages(messageBuffer);
-					this->handleCommands(*this->_clients[event->data.fd]);
-				}
-			}
-		}
-	}
-}
-
-void	Server::handleCommands( const Client &client )
-{
-	Messages	messages(client.getMessages());
-	
-	for (Messages::iterator it(messages.begin()); it != messages.end(); ++it)
-	{
-		if (it->first == "CAP")
-			continue;
-		else if (it->first == "PASS")
-			this->pass(client);
-		else if (it->first == "NICK")
-			this->nick(client);
-		else if (it->first == "USER")
-			this->user(client);
-		else
-			// sent error ERR_UNKNOWNCOMMAND (421) unknown command
-	}
-}
-
-void	Server::pass( const Client &client )
-{
-	
-}
 
 void	Server::removeClient( int fd )
 {
+	this->_epoll.remove(fd);
 	delete this->_clients[fd];
 	this->_clients.erase(this->_clients.find(fd));
 }
+
 
 void	Server::acceptConnection( void )
 {
@@ -131,4 +75,142 @@ void	Server::acceptConnection( void )
 	}
 	this->_epoll.add(client_fd, EPOLLIN | EPOLLRDHUP | EPOLLHUP);
 	this->_clients[client_fd] = new Client( client_fd, inet_ntoa(addr.sin_addr) );
+}
+
+void	Server::run( void )
+{
+	std::vector<struct epoll_event>	events;
+
+	this->_epoll.add(this->_server_fd, EPOLLIN);
+	while (true)
+	{
+		events = this->_epoll.wait();
+		for (std::vector<struct epoll_event>::iterator event = events.begin(); event != events.end(); ++event)
+		{
+			if (event->data.fd == this->_server_fd)
+				this->acceptConnection();
+			else
+			{
+				if (event->events & (EPOLLRDHUP | EPOLLHUP))
+					this->removeClient( event->data.fd );
+				else
+					this->handleClient(*this->_clients[event->data.fd]);
+			}
+		}
+	}
+}
+
+void	Server::handleClient( Client &client )
+{
+	Messages	messages = client.parseMessages(client.receive());
+	
+	for (Messages::iterator it(messages.begin()); it != messages.end(); ++it)
+			if (handleCommands(client, it) < 0)
+				break ;
+}
+
+int	Server::handleCommands(Client &client, const Messages::iterator &message)
+{
+	if (message->first.empty() || message->first == "CAP")
+		return (0);
+	else if (message->first == "PASS")
+		return (this->pass(client, message->second));
+	else if (message->first == "NICK")
+		return (this->nick(client, message->second));
+	else if (message->first == "USER")
+		return (this->user(client, message->second));
+	else if (message->first == "JOIN")
+		return (this->join(client, message->second));
+	else
+		client.reply(ERR_UNKNOWNCOMMAND(client.getNickName(), message->first) + "\r\n");
+	return (0);
+}
+
+int	Server::checkNickNameForm( const std::string &nickName )
+{
+	if (nickName.size() > 9)
+		return (-1);
+	if (nickName.at(0) == '#' || nickName.at(0) == ':' || nickName.at(0) == '$')
+		return (-1);
+	if (nickName.find_first_of(" .,*?!@") != std::string::npos)
+		return (-1);
+	return (0);
+}
+
+int	Server::checkNickNameInUse( const std::string &nickName )
+{
+	for (ClientsMap::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+		if (it->second->getNickName() == nickName)
+			return (-1);
+	return (0);			
+}
+
+int	Server::join( Client &client, const std::vector<std::string> &parameters )
+{
+	if (client.getClientState() != REGISTERED)
+		client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n");
+	
+	
+	return (0);
+}
+
+int	Server::user( Client &client, const std::vector<std::string> &parameters )
+{
+	if (client.getClientState() == UNREGISTERED)
+		return (0);
+	if (client.getClientState() == REGISTERED)
+		return (client.reply(ERR_ALREADYREGISTERED(client.getNickName()) + "\r\n"), 0);
+	if (parameters.size() < 4)
+		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "USER") + "\r\n"), 0);
+	client.setUserName(parameters.at(0));
+	client.setrealName(parameters.at(3));
+	client.welcome(this->getCreationTime());
+	return (0);
+}
+
+int	Server::nick( Client &client, const std::vector<std::string> &parameters )
+{
+	if (client.getClientState() == UNREGISTERED)
+		return (0);
+	if (parameters.empty() || parameters.at(0).empty())
+		return (client.reply(ERR_NONICKNAMEGIVEN(client.getNickName()) + "\r\n"), 0);
+	if (this->checkNickNameForm(parameters.at(0)) < 0)
+		return (client.reply(ERR_ERRONEUSNICKNAME(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
+	if (client.getNickName() == parameters.at(0))
+		return (0);
+	if (this->checkNickNameInUse(parameters.at(0)) < 0)
+		return (client.reply(ERR_NICKNAMEINUSE(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
+	if (client.getClientState() == REGISTERED)
+		client.reply(RPL_NICK(client.getPrefix(), parameters.at(0)) + "\r\n");
+	client.setNickName(parameters.at(0));
+	if (client.getClientState() != REGISTERED)
+		client.welcome(this->getCreationTime());
+	return (0);
+}
+
+int	Server::pass( Client &client, const std::vector<std::string> &parameters )
+{
+	if ( client.getClientState() == REGISTERED )
+		return (client.reply(ERR_ALREADYREGISTERED(client.getNickName()) + "\r\n" ), 0);
+	if ( parameters.empty() )
+		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "PASS") + "\r\n"), 0);
+	if ( parameters.at(0) != this->_password )
+	{
+		client.reply(ERR_PASSWDMISMATCH(client.getNickName()) + "\r\n");
+		this->removeClient(client.getClientFD());
+		return (-1);
+	}
+	client.setClientState(AUTHENTICATED);
+	return (0);
+}
+
+const std::string	Server::getCreationTime( void ) const
+{
+	struct tm	*timeinfo;
+	char 		buffer[80] = {0};
+
+	timeinfo = localtime(&this->_creationTime);
+	strftime(buffer, sizeof(buffer), "%a %b %d %Y at %H:%M:%S %Z", timeinfo);
+
+	return (buffer);
 }

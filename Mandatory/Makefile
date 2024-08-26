@@ -6,7 +6,7 @@
 #    By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 19:26:10 by ael-khel          #+#    #+#              #
-#    Updated: 2024/08/15 07:44:12 by ael-khel         ###   ########.fr        #
+#    Updated: 2024/08/25 03:22:19 by ael-khel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ SRCS = ${addsuffix .cpp, $(FILES)}
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 
-HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp
+HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp include/Response.hpp
 ################################################################################
 CC = c++
 
