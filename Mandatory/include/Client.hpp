@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 04:50:09 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/25 07:45:36 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/28 08:59:11 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,10 @@
 #include <cerrno>
 #include "Response.hpp"
 
-
 #define BUFFER_SIZE 513
 
-typedef std::map< std::string, std::vector<std::string> > Messages;
+typedef std::vector< std::pair< std::string, std::vector<std::string> > > Messages;
+typedef std::pair< std::string, std::vector<std::string> > Pair;
 
 enum ClientState { UNREGISTERED, AUTHENTICATED, REGISTERED };
 
@@ -56,8 +56,6 @@ class	Client {
 		const Messages&		getMessages( void ) const;
 		const std::string	getPrefix( void ) const;
 	
-		
-
 		void				setNickName( const std::string );
 		void				setUserName( const std::string );
 		void				setrealName( const std::string );

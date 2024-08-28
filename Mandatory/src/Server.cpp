@@ -3,21 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/25 16:04:55 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/28 08:55:19 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
-#include <cstring>
-#include <ctime>
-#include <locale>
-#include <map>
-#include <string>
-#include <sys/socket.h>
-#include <vector>
 
 Server::Server( int port, std::string password ) : _port(port), _password(password), _creationTime(time(NULL))
 {
@@ -58,7 +51,6 @@ void	Server::removeClient( int fd )
 	delete this->_clients[fd];
 	this->_clients.erase(this->_clients.find(fd));
 }
-
 
 void	Server::acceptConnection( void )
 {
@@ -145,14 +137,6 @@ int	Server::checkNickNameInUse( const std::string &nickName )
 	return (0);			
 }
 
-int	Server::join( Client &client, const std::vector<std::string> &parameters )
-{
-	if (client.getClientState() != REGISTERED)
-		client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n");
-	
-	
-	return (0);
-}
 
 int	Server::user( Client &client, const std::vector<std::string> &parameters )
 {
@@ -214,3 +198,65 @@ const std::string	Server::getCreationTime( void ) const
 
 	return (buffer);
 }
+
+std::vector<std::string>	Server::parseJoinParameters( const std::string &parameterStr )
+{
+	std::vector<std::string>	parameters;
+	std::stringstream			parameterStream(parameterStr);
+	std::string					parameter;
+
+	while (std::getline(parameterStream, parameter, ','))
+		parameters.push_back(parameter);
+	return (parameters);
+}
+
+int	Server::join( Client &client, const std::vector<std::string> &parameters )
+{
+	std::vector<std::string>	channelNames;
+	std::vector<std::string>	keys;
+
+	if (client.getClientState() != REGISTERED)
+		client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n");
+	if (parameters.empty() || parameters.size() > 2)
+		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "JOIN")+ "\r\n"), 0);
+	channelNames = parseJoinParameters(parameters.at(0));
+	if (parameters.size() == 2)
+		keys = parseJoinParameters(parameters.at(1));
+	for (size_t i = 0; i < channelNames.size(); ++i)
+	{
+		std::string	channelName = channelNames[i];
+		std::string	channelKey = (i < keys.size()) ? keys[i] : "";
+		if (channelName.at(0) != '#')
+		{
+			client.reply(ERR_BADCHANMASK(channelName) + "\r\n");
+			continue ;
+		}
+		Channel* channel = NULL;
+		std::map<std::string, Channel*>::iterator it = this->_channels.find(channelName);
+		bool	newChannel = (it == this->_channels.end());
+		if (!newChannel)
+		{
+			channel = it->second;
+			if (channel->checkChannelModes(client, channelName, channelKey) < 0)
+				continue ;
+		}
+		else
+			channel = new Channel(channelName);
+		channel->addClient(&client);
+		if (newChannel)
+		{
+			channel->addOperator(&client);
+			this->_channels[channelName] = channel;
+		}
+		channel->removeInvite(&client);
+		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName) + "\r\n");
+		if (!channel->getTopic().empty())
+			client.reply(RPL_TOPIC(client.getNickName(), channelName, channel->getTopic()) + "\r\n");
+		client.reply(RPL_NAMREPLY(client.getNickName(), channelName, channel->getNameList()) + "\r\n");
+		client.reply(RPL_ENDOFNAMES(client.getNickName(), channelName));
+	}
+	return (0);
+}
+
+
+

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/25 07:44:36 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/28 08:55:50 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,13 @@
 #include <sstream>
 #include <iomanip>
 #include "Response.hpp"
+#include "Channel.hpp"
 
 
 #define SERVER_NAME "ft_irc"
 
 typedef std::map< int, Client * > ClientsMap;
+typedef std::map< std::string, Channel* > ChannelsMap;
 
 
 class	Server {
@@ -46,6 +48,7 @@ class	Server {
 		time_t						_creationTime;
 		int							_server_fd;
 		ClientsMap					_clients;
+		ChannelsMap					_channels;
 
 	public	:
 
@@ -60,17 +63,18 @@ class	Server {
 		const std::string	getCreationTime( void ) const;
 
 		
-		void					handleClient( Client & );
-		int						handleCommands(Client &client, const Messages::iterator & );
+		void	handleClient( Client & );
+		int		handleCommands(Client &client, const Messages::iterator & );
 
 
 		int	checkNickNameForm( const std::string & );
 		int	checkNickNameInUse( const std::string &nickName );
 
+		std::vector<std::string>	parseJoinParameters( const std::string & );
 
 		int	pass( Client &, const std::vector<std::string> & );
 		int	nick( Client &, const std::vector<std::string> & );
 		int	user( Client &, const std::vector<std::string> & );
-
+		int	join( Client &, const std::vector<std::string> & );
 
 };

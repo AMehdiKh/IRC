@@ -3,20 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 04:50:21 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/25 13:37:35 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/28 02:00:33 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Client.hpp"
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <vector>
-
-
 
 Client::Client( int client_fd, std::string ip ) :
 	_client_fd(client_fd),
@@ -66,7 +60,7 @@ const ClientState&	Client::getClientState( void ) const
 
 const std::string	Client::getPrefix( void ) const
 {
-	return (":" + this->getNickName() + "!" + this->getUserName() + "@" + getIP());
+	return (":" + this->getNickName() + "!" + this->getUserName() + "@" + this->getIP());
 }	
 
 void				Client::setNickName( const std::string nickName )
@@ -91,23 +85,21 @@ void				Client::setClientState( const ClientState clientState )
 
 const Messages	Client::parseMessages( const std::string &data )
 {
-	std::cout << data << "############ ++++ ############" << std::endl;
 	Messages			messages;
 	std::stringstream	messageStream(data);
 	std::string			line;
 	std::string			word;
-	std::string			firstWord;
+	std::string			command;
 
-	while (std::getline(messageStream, line))
+	while (std::getline(messageStream, line, '\n'))
 	{
 		if (!line.empty() && line.at(line.size() - 1) == '\r')
 			line.erase(line.size() - 1, 1);
-
 		std::vector<std::string>	parameters;
 		std::stringstream			lineStream(line);
 
-		std::getline(lineStream >> std::ws, firstWord, ' ');
-		messages[firstWord] = parameters;
+		std::getline(lineStream >> std::ws, command, ' ');
+		messages.push_back(Pair(command, parameters));
 		while (std::getline(lineStream, word, ' '))
 		{
 			if (word.at(0) == ':')
@@ -117,11 +109,11 @@ const Messages	Client::parseMessages( const std::string &data )
 					word = tmp + " " + word;
 				else
 					word = tmp;
-				messages[firstWord].push_back(word);
+				messages.back().second.push_back(word);
 				break ;
 			}
 			else
-				messages[firstWord].push_back(word);
+				messages.back().second.push_back(word);
 		}
 	}
 	return (messages);

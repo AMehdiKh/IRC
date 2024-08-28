@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ael-khel <ael-khel@student.1337.ma>        +#+  +:+       +#+         #
+#    By: codespace <codespace@student.42.fr>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 19:26:10 by ael-khel          #+#    #+#              #
-#    Updated: 2024/08/25 03:22:19 by ael-khel         ###   ########.fr        #
+#    Updated: 2024/08/28 08:57:53 by codespace        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,13 +17,13 @@ SRC_DIR = src
 
 OBJ_DIR = objs
 
-FILES = main Server Epoll Client
+FILES = main Server Epoll Client Channel
 
 SRCS = ${addsuffix .cpp, $(FILES)}
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 
-HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp include/Response.hpp
+HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp include/Response.hpp include/Channel.hpp
 ################################################################################
 CC = c++
 
