@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/20 14:08:21 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 08:47:50 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 19:34:05 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 
 #define RPL_NICK(prefix, nickName)                        prefix + " NICK " + nickName
 #define RPL_JOIN(prefix, channel)                         prefix + " JOIN " + channel
-
+#define RPL_INVITE(prefix, nickName, channel)             prefix + " INVITE " + nickName + " " channel
 
 #define RPL_WELCOME(nickName, prefix)                     ":ft_irc 001 " + nickName + " :Welcome to the Internet Relay Network " + prefix
 #define RPL_YOURHOST(nickName)                            ":ft_irc 002 " + nickName + " :Your host is ft_irc, running version IRCv3"

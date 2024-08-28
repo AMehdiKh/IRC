@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: codespace <codespace@student.42.fr>        +#+  +:+       +#+         #
+#    By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 19:26:10 by ael-khel          #+#    #+#              #
-#    Updated: 2024/08/28 08:57:53 by codespace        ###   ########.fr        #
+#    Updated: 2024/08/28 16:19:54 by ael-khel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,13 +17,13 @@ SRC_DIR = src
 
 OBJ_DIR = objs
 
-FILES = main Server Epoll Client Channel
+FILES = main Server Kqueue Client Channel Join User Nick Pass
 
 SRCS = ${addsuffix .cpp, $(FILES)}
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 
-HEADERS = include/Server.hpp include/Epoll.hpp include/Client.hpp include/Response.hpp include/Channel.hpp
+HEADERS = include/Server.hpp include/Kqueue.hpp include/Client.hpp include/Response.hpp include/Channel.hpp
 ################################################################################
 CC = c++
 
@@ -34,7 +34,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(OBJS) -o $@ -fsanitize=address -static-libasan
+	$(CC) $(OBJS) -o $@ -fsanitize=address -static-libsan
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)

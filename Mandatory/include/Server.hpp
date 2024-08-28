@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 10:51:03 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 13:41:48 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "Epoll.hpp"
+#include "Kqueue.hpp"
 #include "Client.hpp"
 #include <vector>
 #include <ctime>
@@ -42,17 +42,17 @@ class	Server {
 
 	private	:
 
-		Epoll						_epoll;
-		int							_port;
-		std::string					_password;
-		time_t						_creationTime;
-		int							_server_fd;
-		ClientsMap					_clients;
-		ChannelsMap					_channels;
+		Kqueue		_kqueue;
+		int			_port;
+		std::string	_password;
+		time_t		_creationTime;
+		int			_server_fd;
+		ClientsMap	_clients;
+		ChannelsMap	_channels;
 
 	public	:
 
-		Server( int port, std::string password );
+		Server( int, std::string );
 		~Server( );
 
 		void	initServer( void );
@@ -64,11 +64,11 @@ class	Server {
 		const std::string	getCreationTime( void ) const;
 		
 		void	handleClient( Client & );
-		int		handleCommands(Client &client, const Messages::iterator & );
+		int		handleCommands(Client &, const Messages::iterator & );
 
 
 		int	checkNickNameForm( const std::string & );
-		int	checkNickNameInUse( const std::string &nickName );
+		int	checkNickNameInUse( const std::string & );
 
 		std::vector<std::string>	parseJoinParameters( const std::string & );
 

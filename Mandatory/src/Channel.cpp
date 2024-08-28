@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 01:58:23 by codespace         #+#    #+#             */
-/*   Updated: 2024/08/28 09:00:13 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 16:25:35 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,5 +163,6 @@ const std::string	Channel::getNameList( void ) const
 			namesList += "@";
 		namesList += this->_clients.at(i)->getNickName();
 	}
+	std::cout << 
 	return (namesList);
 }

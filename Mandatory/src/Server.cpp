@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 10:48:57 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 16:11:20 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,16 +48,15 @@ void	Server::initServer( void )
 void	Server::setNonBlocking(int fd)
 {
 	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1)
+	if (flags < 0)
 		throw std::runtime_error("Error: Failed to get file descriptor flags");
-	flags |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, flags) == -1)
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
 		throw std::runtime_error("Error: Failed to set file descriptor to non-blocking mode");
 }
 
 void	Server::removeClient( int fd )
 {
-	this->_epoll.remove(fd);
+	this->_kqueue.remove(fd);
 	delete this->_clients[fd];
 	this->_clients.erase(this->_clients.find(fd));
 }
@@ -76,28 +75,28 @@ void	Server::acceptConnection( void )
 		return ;
 	}
 	this->setNonBlocking(client_fd);
-	this->_epoll.add(client_fd, EPOLLIN | EPOLLRDHUP | EPOLLHUP);
+	this->_kqueue.add(client_fd, EV_ADD | EV_ENABLE | EV_EOF);
 	this->_clients[client_fd] = new Client( client_fd, inet_ntoa(addr.sin_addr) );
 }
 
 void	Server::run( void )
 {
-	std::vector<struct epoll_event>	events;
+	std::vector<struct kevent>	events;
 
-	this->_epoll.add(this->_server_fd, EPOLLIN);
+	this->_kqueue.add(this->_server_fd, EV_ADD | EV_ENABLE);
 	while (true)
 	{
-		events = this->_epoll.wait();
-		for (std::vector<struct epoll_event>::iterator event = events.begin(); event != events.end(); ++event)
+		events = this->_kqueue.wait();
+		for (std::vector<struct kevent>::iterator event = events.begin(); event != events.end(); ++event)
 		{
-			if (event->data.fd == this->_server_fd)
+			if (event->ident == (uintptr_t)this->_server_fd)
 				this->acceptConnection();
 			else
 			{
-				if (event->events & (EPOLLRDHUP | EPOLLHUP))
-					this->removeClient( event->data.fd );
-				else
-					this->handleClient(*this->_clients[event->data.fd]);
+				if (event->flags & EV_EOF)
+					this->removeClient( event->ident );
+				else if (event->filter == EVFILT_READ)
+					this->handleClient(*this->_clients[event->ident]);
 			}
 		}
 	}
@@ -129,76 +128,6 @@ int	Server::handleCommands(Client &client, const Messages::iterator &message)
 	return (0);
 }
 
-int	Server::checkNickNameForm( const std::string &nickName )
-{
-	if (nickName.size() > 9)
-		return (-1);
-	if (nickName.at(0) == '#' || nickName.at(0) == ':' || nickName.at(0) == '$')
-		return (-1);
-	if (nickName.find_first_of(" .,*?!@") != std::string::npos)
-		return (-1);
-	return (0);
-}
-
-int	Server::checkNickNameInUse( const std::string &nickName )
-{
-	for (ClientsMap::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
-		if (it->second->getNickName() == nickName)
-			return (-1);
-	return (0);			
-}
-
-
-int	Server::user( Client &client, const std::vector<std::string> &parameters )
-{
-	if (client.getClientState() == UNREGISTERED)
-		return (0);
-	if (client.getClientState() == REGISTERED)
-		return (client.reply(ERR_ALREADYREGISTERED(client.getNickName()) + "\r\n"), 0);
-	if (parameters.size() < 4)
-		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "USER") + "\r\n"), 0);
-	client.setUserName(parameters.at(0));
-	client.setrealName(parameters.at(3));
-	client.welcome(this->getCreationTime());
-	return (0);
-}
-
-int	Server::nick( Client &client, const std::vector<std::string> &parameters )
-{
-	if (client.getClientState() == UNREGISTERED)
-		return (0);
-	if (parameters.empty() || parameters.at(0).empty())
-		return (client.reply(ERR_NONICKNAMEGIVEN(client.getNickName()) + "\r\n"), 0);
-	if (this->checkNickNameForm(parameters.at(0)) < 0)
-		return (client.reply(ERR_ERRONEUSNICKNAME(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
-	if (client.getNickName() == parameters.at(0))
-		return (0);
-	if (this->checkNickNameInUse(parameters.at(0)) < 0)
-		return (client.reply(ERR_NICKNAMEINUSE(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
-	if (client.getClientState() == REGISTERED)
-		client.reply(RPL_NICK(client.getPrefix(), parameters.at(0)) + "\r\n");
-	client.setNickName(parameters.at(0));
-	if (client.getClientState() != REGISTERED)
-		client.welcome(this->getCreationTime());
-	return (0);
-}
-
-int	Server::pass( Client &client, const std::vector<std::string> &parameters )
-{
-	if ( client.getClientState() == REGISTERED )
-		return (client.reply(ERR_ALREADYREGISTERED(client.getNickName()) + "\r\n" ), 0);
-	if ( parameters.empty() )
-		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "PASS") + "\r\n"), 0);
-	if ( parameters.at(0) != this->_password )
-	{
-		client.reply(ERR_PASSWDMISMATCH(client.getNickName()) + "\r\n");
-		this->removeClient(client.getClientFD());
-		return (-1);
-	}
-	client.setClientState(AUTHENTICATED);
-	return (0);
-}
-
 const std::string	Server::getCreationTime( void ) const
 {
 	struct tm	*timeinfo;
@@ -209,65 +138,3 @@ const std::string	Server::getCreationTime( void ) const
 
 	return (buffer);
 }
-
-std::vector<std::string>	Server::parseJoinParameters( const std::string &parameterStr )
-{
-	std::vector<std::string>	parameters;
-	std::stringstream			parameterStream(parameterStr);
-	std::string					parameter;
-
-	while (std::getline(parameterStream, parameter, ','))
-		parameters.push_back(parameter);
-	return (parameters);
-}
-
-int	Server::join( Client &client, const std::vector<std::string> &parameters )
-{
-	std::vector<std::string>	channelNames;
-	std::vector<std::string>	keys;
-
-	if (client.getClientState() != REGISTERED)
-		client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n");
-	if (parameters.empty() || parameters.size() > 2)
-		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "JOIN")+ "\r\n"), 0);
-	channelNames = parseJoinParameters(parameters.at(0));
-	if (parameters.size() == 2)
-		keys = parseJoinParameters(parameters.at(1));
-	for (size_t i = 0; i < channelNames.size(); ++i)
-	{
-		std::string	channelName = channelNames[i];
-		std::string	channelKey = (i < keys.size()) ? keys[i] : "";
-		if (channelName.at(0) != '#')
-		{
-			client.reply(ERR_BADCHANMASK(channelName) + "\r\n");
-			continue ;
-		}
-		Channel* channel = NULL;
-		std::map<std::string, Channel*>::iterator it = this->_channels.find(channelName);
-		bool	newChannel = (it == this->_channels.end());
-		if (!newChannel)
-		{
-			channel = it->second;
-			if (channel->checkChannelModes(client, channelName, channelKey) < 0)
-				continue ;
-		}
-		else
-			channel = new Channel(channelName);
-		channel->addClient(&client);
-		if (newChannel)
-		{
-			channel->addOperator(&client);
-			this->_channels[channelName] = channel;
-		}
-		channel->removeInvite(&client);
-		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName) + "\r\n");
-		if (!channel->getTopic().empty())
-			client.reply(RPL_TOPIC(client.getNickName(), channelName, channel->getTopic()) + "\r\n");
-		client.reply(RPL_NAMREPLY(client.getNickName(), channelName, channel->getNameList()) + "\r\n");
-		client.reply(RPL_ENDOFNAMES(client.getNickName(), channelName));
-	}
-	return (0);
-}
-
-
-
