@@ -6,7 +6,7 @@
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 08:55:19 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 10:48:57 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,9 @@ void	Server::initServer( void )
 	addr.sin_port = htons(this->_port); // convert to network bytes order (big-endian)
 	addr.sin_addr.s_addr = htonl(INADDR_ANY); // bind the socket to all available interfaces it will listen for incoming connections on any of the machine's IP addresses
 
-	if ( (this->_server_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) < 0 )
+	if ( (this->_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
 		throw ( std::runtime_error("Error: Unable to create server socket. Please try again!\n") );
+	this->setNonBlocking(this->_server_fd);
 	if ( setsockopt(this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0 )
 		throw ( std::runtime_error("Error: Failed to set socket options. Please try again!\n") );
 	if ( bind(this->_server_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0 )
@@ -44,6 +45,15 @@ void	Server::initServer( void )
 		throw ( std::runtime_error("Error: Failed to listen on server socket. Please try again!\n") );
 }
 
+void	Server::setNonBlocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1)
+		throw std::runtime_error("Error: Failed to get file descriptor flags");
+	flags |= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flags) == -1)
+		throw std::runtime_error("Error: Failed to set file descriptor to non-blocking mode");
+}
 
 void	Server::removeClient( int fd )
 {
@@ -59,12 +69,13 @@ void	Server::acceptConnection( void )
 	socklen_t			addrSize;
 
 	addrSize = sizeof(addr);
-	if ((client_fd = accept4(this->_server_fd, (struct sockaddr *)&addr, &addrSize, SOCK_NONBLOCK)) < 0)
+	if ((client_fd = accept(this->_server_fd, (struct sockaddr *)&addr, &addrSize)) < 0)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 			throw ( std::runtime_error("Error: Failed to accept incoming connection. Please try again!\n") );
 		return ;
 	}
+	this->setNonBlocking(client_fd);
 	this->_epoll.add(client_fd, EPOLLIN | EPOLLRDHUP | EPOLLHUP);
 	this->_clients[client_fd] = new Client( client_fd, inet_ntoa(addr.sin_addr) );
 }

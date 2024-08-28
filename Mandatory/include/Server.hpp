@@ -6,13 +6,12 @@
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 08:55:50 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/28 10:51:03 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <bits/types/time_t.h>
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
@@ -30,6 +29,7 @@
 #include <iomanip>
 #include "Response.hpp"
 #include "Channel.hpp"
+#include <fcntl.h>
 
 
 #define SERVER_NAME "ft_irc"
@@ -59,9 +59,9 @@ class	Server {
 		void	run( void );
 		void	acceptConnection( void );
 		void	removeClient( int );
+		void	setNonBlocking( int );
 
 		const std::string	getCreationTime( void ) const;
-
 		
 		void	handleClient( Client & );
 		int		handleCommands(Client &client, const Messages::iterator & );
