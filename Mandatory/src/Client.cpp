@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
+/*   By: moelalj <moelalj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 04:50:21 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 23:57:13 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/31 00:09:51 by moelalj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,6 @@ const Messages	Client::parseMessages( const std::string &data )
 
 		std::getline(lineStream >> std::ws, command, ' ');
 		messages.push_back(Pair(command, parameters));
-			//QUIT DONE :das dadd
 		while (std::getline(lineStream, word, ' '))
 		{
 			if (word.at(0) == ':')
