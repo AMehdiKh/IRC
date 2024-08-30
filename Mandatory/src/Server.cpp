@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 23:12:39 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:56:23 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,11 +69,7 @@ void	Server::acceptConnection( void )
 
 	addrSize = sizeof(addr);
 	if ((client_fd = accept(this->_server_fd, (struct sockaddr *)&addr, &addrSize)) < 0)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-			throw ( std::runtime_error("Error: Failed to accept incoming connection. Please try again!\n") );
-		return ;
-	}
+		throw ( std::runtime_error("Error: Failed to accept incoming connection. Please try again!\n") );
 	this->setNonBlocking(client_fd);
 	this->_kqueue.add(client_fd, EV_ADD | EV_ENABLE | EV_EOF);
 	this->_clients[client_fd] = new Client( client_fd, inet_ntoa(addr.sin_addr) );

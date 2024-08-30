@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 04:50:21 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/29 23:37:18 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:57:13 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,6 @@ const std::string	Client::receive( void )
 	char	messageBuffer[BUFFER_SIZE] = { 0 };
 
 	if (recv(this->getClientFD(), messageBuffer, sizeof(messageBuffer), 0) < 0)
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
 			throw ( std::runtime_error("Error: Failed to receive data. Please try again!\n") );
 	if (messageBuffer[BUFFER_SIZE - 1] != '\0') // Truncate the message if is larger than BUFFER_SIZE
 	{
@@ -139,10 +138,7 @@ const std::string	Client::receive( void )
 void	Client::reply( const std::string reply )
 {
 	if (send(this->getClientFD(), reply.c_str(), reply.size(), 0) < 0)
-	{
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-			throw ( std::runtime_error("Error: Failed to send data. Please try again!\n") );
-	}
+		throw ( std::runtime_error("Error: Failed to send data. Please try again!\n") );
 }
 
 void	Client::welcome( const std::string creationTime )
