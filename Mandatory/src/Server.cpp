@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 08:02:52 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:12:39 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,8 @@ int	Server::handleCommands(Client &client, const Messages::iterator &message)
 		return (this->topic(client, message->second));
 	else if (message->first == "KICK")
 		return (this->kick(client, message->second));
+	else if (message->first == "PRIVMSG" || message->first == "privmsg")
+		return (this->privmsg(client, message->second));
 	else
 		client.reply(ERR_UNKNOWNCOMMAND(client.getNickName(), message->first) + "\r\n");
 	return (0);

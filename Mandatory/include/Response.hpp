@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/20 14:08:21 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 09:52:35 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 22:47:45 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,23 +27,23 @@
 #define ERR_INVITEONLYCHAN(nickName, channel)                       ":ft_irc 473 " + nickName + " " + channel + " :Cannot join channel (+i)" + "\r\n"
 #define ERR_NOSUCHNICK(nickName, nick)                              ":ft_irc 401 " + nickName + " " + nick + " :No such nick" + "\r\n"
 
-#define ERR_USERNOTINCHANNEL(nickName, nick, channel)               ":ft_irc 441 " + nickName + " " + nick + " " + channel + " :They aren't on that channel" + "\r\n"
-
-
-
 #define ERR_NOTONCHANNEL(nickName, channel)                         ":ft_irc 442 " + nickName + " " + channel + " :You're not on that channel" + "\r\n"
 #define ERR_CHANOPRIVSNEEDED(nickName, channel)                     ":ft_irc 482 " + nickName + " " + channel + " :You're not channel operator" + "\r\n"
 
 #define ERR_USERONCHANNEL(nickName, nick, channel)                  ":ft_irc 443 " + nickName + " " + nick + " " + channel + " :is already on channel" + "\r\n"
+#define ERR_USERNOTINCHANNEL(nickName, nick, channel)               ":ft_irc 441 " + nickName + " " + nick + " " + channel + " :They aren't on that channel" + "\r\n"
 
 #define ERR_UNKNOWNMODE(nickName, mode)                             ":ft_irc 472 " + nickName + " " + mode + " :is unknown mode char to me" + "\r\n"
+
+#define ERR_NOTEXTTOSEND(nickName)                                  ":ft_irc 412 " + nickName + " :No text to send" + "\r\n"
 
 #define RPL_NICK(prefix, nickName)                                  prefix + " NICK " + nickName + "\r\n"
 #define RPL_JOIN(prefix, channel)                                   prefix + " JOIN " + channel + "\r\n"
 #define RPL_INVITE(prefix, nickName, channel)                       prefix + " INVITE " + nickName + " " + channel + "\r\n"
 #define RPL_MODE(prefix, channel, modes, modeArgs)                  prefix + " MODE " + channel + " " + modes + modeArgs + "\r\n"
-#define RPL_TOPIC_2(prefix, channel, topic)                           prefix + " TOPIC " + channel + " :" + topic + "\r\n"
+#define RPL_TOPIC_2(prefix, channel, topic)                         prefix + " TOPIC " + channel + " :" + topic + "\r\n"
 #define RPL_KICK(prefix, channel, user, reason)                     prefix + " KICK " + channel + " " + user + " :" + reason + "\r\n"
+#define RPL_PRIVMSG(prefix, target, msg)                            prefix + " PRIVMSG " + target + " :" + msg + "\r\n"
 
 #define RPL_WELCOME(nickName, prefix)                               ":ft_irc 001 " + nickName + " :Welcome to the Internet Relay Network " + prefix + "\r\n"
 #define RPL_YOURHOST(nickName)                                      ":ft_irc 002 " + nickName + " :Your host is ft_irc, running version IRCv3" + "\r\n"

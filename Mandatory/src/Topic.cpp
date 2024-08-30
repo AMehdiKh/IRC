@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 07:26:51 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 09:54:19 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:24:29 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	Server::topic( Client &client, const std::vector<std::string> &parameters )
 		if (!channel->isClientOperator(&client) && channel->getTopicRestricted())
 			return (client.reply(ERR_CHANOPRIVSNEEDED(client.getNickName(), channel->getName())), 0);
 		channel->setTopic(parameters.at(1));
-		channel->broadcasting(RPL_TOPIC_2(client.getPrefix(), channel->getName(), channel->getTopic()));
+		channel->broadcasting(RPL_TOPIC_2(client.getPrefix(), channel->getName(), channel->getTopic()), NULL);
 	}
 	return (0);
 }

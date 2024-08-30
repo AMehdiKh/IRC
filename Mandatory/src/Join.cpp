@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 16:10:54 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 07:25:48 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:24:00 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ int	Server::join( Client &client, const std::vector<std::string> &parameters )
 			this->_channels[channelName] = channel;
 		}
 		channel->removeInvite(&client);
-		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName));
+		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName), NULL);
 		if (!channel->getTopic().empty())
 			client.reply(RPL_TOPIC(client.getNickName(), channelName, channel->getTopic()));
 		else

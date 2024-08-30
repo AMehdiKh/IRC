@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 01:58:23 by codespace         #+#    #+#             */
-/*   Updated: 2024/08/30 00:45:06 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:23:30 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,14 @@ Channel::~Channel( )
 	
 }
 
-void	Channel::broadcasting( const std::string msg )
+void	Channel::broadcasting( const std::string msg, Client *exclude )
 {
 	for (std::vector<Client*>::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+	{
+		if (*it == exclude)
+			continue ;
 		(*it)->reply(msg);
+	}
 }
 
 const std::string&	Channel::getName( void ) const

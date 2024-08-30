@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 08:03:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 09:54:01 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:24:08 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,9 @@ int	Server::kick( Client &client, const std::vector<std::string> &parameters )
 	if (!channel->isClientJoined(this->findClientByNickname(targetNickname)))
 		return (client.reply(ERR_USERNOTINCHANNEL(client.getNickName(), targetNickname, channel->getName())), 0);
 	channel->removeClient(this->findClientByNickname(targetNickname));
+	channel->removeOperator(this->findClientByNickname(targetNickname));
 	this->findClientByNickname(targetNickname)->reply(RPL_KICK(client.getPrefix(), channel->getName(), targetNickname, reason));
-	channel->broadcasting(RPL_KICK(client.getPrefix(), channel->getName(), targetNickname, reason));
+	channel->broadcasting(RPL_KICK(client.getPrefix(), channel->getName(), targetNickname, reason), NULL);
 	return (0);
 }
 		

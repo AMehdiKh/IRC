@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 09:50:59 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 22:41:08 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,5 +84,5 @@ class	Server {
 		int	mode( Client &, const std::vector<std::string> & );
 		int	topic( Client &, const std::vector<std::string> & );
 		int	kick( Client &, const std::vector<std::string> & );
-
+		int	privmsg( Client &, const std::vector<std::string> & );
 };

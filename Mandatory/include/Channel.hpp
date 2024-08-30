@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 12:05:05 by codespace         #+#    #+#             */
-/*   Updated: 2024/08/30 05:26:38 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:24:40 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,5 +70,5 @@ class	Channel	{
 		void						handleOperatorMode( Client *, bool );
 
 
-		void						broadcasting( const std::string );
+		void						broadcasting( const std::string, Client * );
 };

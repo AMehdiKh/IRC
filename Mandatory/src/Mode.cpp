@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/29 17:35:56 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/30 07:14:08 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 23:24:16 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ int	Server::mode( Client &client, const std::vector<std::string> &parameters )
 			client.reply(ERR_UNKNOWNMODE(client.getNickName(), mode));
 	}
 	if (!modeChanges.empty())
-        channel->broadcasting(RPL_MODE(client.getPrefix(), channel->getName(), modeChanges, modeArgs));
+        channel->broadcasting(RPL_MODE(client.getPrefix(), channel->getName(), modeChanges, modeArgs), NULL);
 	return (0);
 }
 
