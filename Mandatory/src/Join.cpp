@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 16:10:54 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 16:26:38 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 07:25:48 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,9 @@ int	Server::join( Client &client, const std::vector<std::string> &parameters )
 	std::vector<std::string>	keys;
 
 	if (client.getClientState() != REGISTERED)
-		return(client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n"), 0);
+		return(client.reply(ERR_NOTREGISTERED(client.getNickName())), 0);
 	if (parameters.empty() || parameters.size() > 2)
-		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "JOIN")+ "\r\n"), 0);
+		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "JOIN")), 0);
 	channelNames = parseJoinParameters(parameters.at(0));
 	if (parameters.size() == 2)
 		keys = parseJoinParameters(parameters.at(1));
@@ -41,7 +41,7 @@ int	Server::join( Client &client, const std::vector<std::string> &parameters )
 		std::string	channelKey = (i < keys.size()) ? keys[i] : "";
 		if (channelName.at(0) != '#')
 		{
-			client.reply(ERR_BADCHANMASK(channelName) + "\r\n");
+			client.reply(ERR_BADCHANMASK(channelName));
 			continue ;
 		}
 		Channel* channel = NULL;
@@ -62,11 +62,13 @@ int	Server::join( Client &client, const std::vector<std::string> &parameters )
 			this->_channels[channelName] = channel;
 		}
 		channel->removeInvite(&client);
-		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName) + "\r\n");
+		channel->broadcasting(RPL_JOIN(client.getPrefix(), channelName));
 		if (!channel->getTopic().empty())
-			client.reply(RPL_TOPIC(client.getNickName(), channelName, channel->getTopic()) + "\r\n");
-		client.reply(RPL_NAMREPLY(client.getNickName(), channelName, channel->getNameList()) + "\r\n");
-		client.reply(RPL_ENDOFNAMES(client.getNickName(), channelName) + "\r\n");
+			client.reply(RPL_TOPIC(client.getNickName(), channelName, channel->getTopic()));
+		else
+			client.reply(RPL_NOTOPIC(client.getNickName(), channelName));
+		client.reply(RPL_NAMREPLY(client.getNickName(), channelName, channel->getNameList()));
+		client.reply(RPL_ENDOFNAMES(client.getNickName(), channelName));
 	}
 	return (0);
 }

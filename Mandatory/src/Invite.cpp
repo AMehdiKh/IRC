@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 18:52:14 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 19:31:38 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 00:42:08 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,25 +15,25 @@
 int	Server::invite( Client &client, const std::vector<std::string> &parameters )
 {
 	if (client.getClientState() != REGISTERED)
-		return(client.reply(ERR_NOTREGISTERED(client.getNickName()) + "\r\n"), 0);
+		return(client.reply(ERR_NOTREGISTERED(client.getNickName())), 0);
 	if (parameters.size() != 2 || parameters.at(0).empty() || parameters.at(1).empty())
-		return (client.reply(461 + "\r\n"), 0);
-
+		return (client.reply(ERR_NEEDMOREPARAMS(client.getNickName(), "INVITE")), 0);
 	std::string	nickName(parameters.at(0));
-	std::string	channelName(parameter.at(1));
+	std::string	channelName(parameters.at(1));
+	Client		*invitedClient = this->findClientByNickname(nickName);
+	if (!invitedClient)
+		return (client.reply(ERR_NOSUCHNICK(client.getNickName(), nickName)), 0);
 	Channel		*channel = this->findChannel(channelName);
 	if (!channel)
-		return (client.reply(403 + "\r\n"), 0);
-	if (!channel->isClientOperator(sender))
-		return (client.reply(482 + "\r\n"), 0);
-	Client		*invitedClient = findClientByNickname(nickName);
-	if (!invitedClient)
-		return (client.reply(401 + "\r\n"), 0);
-	if (channel->isClientInChannel(invitedClient))
-		return(client.reply(443 + "\r\n"), 0);
+		return (client.reply(ERR_NOSUCHCHANNEL(client.getNickName(), channelName)), 0);
+	if (!channel->isClientJoined(&client))
+		return (client.reply(ERR_NOTONCHANNEL(client.getNickName(), channelName)), 0);
+	if (channel->getInviteOnly() && !channel->isClientOperator(&client))
+		return (client.reply(ERR_CHANOPRIVSNEEDED(client.getNickName(), channelName)), 0);
+	if (channel->isClientJoined(invitedClient))
+		return(client.reply(ERR_USERONCHANNEL(client.getNickName(), nickName, channelName)), 0);
 	channel->inviteClient(invitedClient);
-	client.reply(341 + "\r\n");
-	client.reply(RPL_INVITE(client.getPrefix(), nickName, channel) + "\r\n");
-
+	client.reply(RPL_INVITING(client.getNickName(), nickName, channelName));
+	invitedClient->reply(RPL_INVITE(client.getPrefix(), nickName, channelName));
 	return (0);
 }

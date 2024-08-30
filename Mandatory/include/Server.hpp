@@ -6,13 +6,14 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:38 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 13:41:48 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 09:50:59 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <iostream>
+#include <cstdlib>
 #include <unistd.h>
 #include <cstring>
 #include <map>
@@ -71,10 +72,17 @@ class	Server {
 		int	checkNickNameInUse( const std::string & );
 
 		std::vector<std::string>	parseJoinParameters( const std::string & );
+		
+		Client*						findClientByNickname( const std::string );
+		Channel*					findChannel( const std::string );
 
 		int	pass( Client &, const std::vector<std::string> & );
 		int	nick( Client &, const std::vector<std::string> & );
 		int	user( Client &, const std::vector<std::string> & );
 		int	join( Client &, const std::vector<std::string> & );
+		int	invite( Client &, const std::vector<std::string> & );
+		int	mode( Client &, const std::vector<std::string> & );
+		int	topic( Client &, const std::vector<std::string> & );
+		int	kick( Client &, const std::vector<std::string> & );
 
 };

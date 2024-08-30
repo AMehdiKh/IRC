@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 12:05:05 by codespace         #+#    #+#             */
-/*   Updated: 2024/08/28 08:59:52 by codespace        ###   ########.fr       */
+/*   Updated: 2024/08/30 05:26:38 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class	Channel	{
 		std::vector<Client*>	_invitedClients;
 		size_t					_userLimit;
 		bool					_inviteOnly;
+		bool					_topicRestricted;
 
 	public	:
 		Channel( const std::string );
@@ -36,15 +37,18 @@ class	Channel	{
 		const std::string&			getKey( void ) const;
 		const size_t&				getUserLimit( void ) const;
 		bool						getInviteOnly( void ) const;
+		bool						getTopicRestricted( void ) const;
 		std::vector<Client*>&		getClients( void );
 		std::vector<Client*>&		getOperators( void );
 		size_t						getChannelSize( void ) const;
+
 
 
 		void						setTopic( const std::string );
 		void						setKey( const std::string );
 		void						setUserLimit( const size_t );
 		void						setInviteOnly( const bool );
+		void						setTopicRestricted( const bool );
 
 		bool						isClientJoined( Client* ) const;
 		void						addClient( Client* );
@@ -60,6 +64,11 @@ class	Channel	{
 
 		int							checkChannelModes( Client &, const std::string &, const std::string & ) const;
 		const std::string			getNameList( void ) const;
+		std::string					intToString( int );
+
+		void						sendChannelModes( Client& );
+		void						handleOperatorMode( Client *, bool );
+
 
 		void						broadcasting( const std::string );
 };

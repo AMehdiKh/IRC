@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 22:19:48 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 16:11:20 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 08:02:52 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,6 +123,14 @@ int	Server::handleCommands(Client &client, const Messages::iterator &message)
 		return (this->user(client, message->second));
 	else if (message->first == "JOIN")
 		return (this->join(client, message->second));
+	else if (message->first == "INVITE")
+		return (this->invite(client, message->second));
+	else if (message->first == "MODE")
+		return (this->mode(client, message->second));
+	else if (message->first == "TOPIC")
+		return (this->topic(client, message->second));
+	else if (message->first == "KICK")
+		return (this->kick(client, message->second));
 	else
 		client.reply(ERR_UNKNOWNCOMMAND(client.getNickName(), message->first) + "\r\n");
 	return (0);
@@ -137,4 +145,20 @@ const std::string	Server::getCreationTime( void ) const
 	strftime(buffer, sizeof(buffer), "%a %b %d %Y at %H:%M:%S %Z", timeinfo);
 
 	return (buffer);
+}
+
+Client*	Server::findClientByNickname( const std::string nickName)
+{
+	for (ClientsMap::iterator it = this->_clients.begin(); it != this->_clients.end(); ++it)
+		if (it->second->getNickName() == nickName)
+			return (it->second);
+	return (NULL);
+}
+
+Channel*	Server::findChannel( const std::string channelName )
+{
+	for (ChannelsMap::iterator it = this->_channels.begin(); it != this->_channels.end(); ++it)
+		if (it->first == channelName)
+			return (it->second);
+	return (NULL);
 }

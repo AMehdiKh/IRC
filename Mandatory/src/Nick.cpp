@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 16:08:25 by ael-khel          #+#    #+#             */
-/*   Updated: 2024/08/28 16:09:09 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/29 15:13:21 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,15 @@ int	Server::nick( Client &client, const std::vector<std::string> &parameters )
 	if (client.getClientState() == UNREGISTERED)
 		return (0);
 	if (parameters.empty() || parameters.at(0).empty())
-		return (client.reply(ERR_NONICKNAMEGIVEN(client.getNickName()) + "\r\n"), 0);
+		return (client.reply(ERR_NONICKNAMEGIVEN(client.getNickName())), 0);
 	if (this->checkNickNameForm(parameters.at(0)) < 0)
-		return (client.reply(ERR_ERRONEUSNICKNAME(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
+		return (client.reply(ERR_ERRONEUSNICKNAME(client.getNickName(), parameters.at(0))), 0);
 	if (client.getNickName() == parameters.at(0))
 		return (0);
 	if (this->checkNickNameInUse(parameters.at(0)) < 0)
-		return (client.reply(ERR_NICKNAMEINUSE(client.getNickName(), parameters.at(0)) + "\r\n"), 0);
+		return (client.reply(ERR_NICKNAMEINUSE(client.getNickName(), parameters.at(0))), 0);
 	if (client.getClientState() == REGISTERED)
-		client.reply(RPL_NICK(client.getPrefix(), parameters.at(0)) + "\r\n");
+		client.reply(RPL_NICK(client.getPrefix(), parameters.at(0)));
 	client.setNickName(parameters.at(0));
 	if (client.getClientState() != REGISTERED)
 		client.welcome(this->getCreationTime());

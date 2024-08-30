@@ -6,7 +6,7 @@
 #    By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 19:26:10 by ael-khel          #+#    #+#              #
-#    Updated: 2024/08/28 16:19:54 by ael-khel         ###   ########.fr        #
+#    Updated: 2024/08/30 09:53:48 by ael-khel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ SRC_DIR = src
 
 OBJ_DIR = objs
 
-FILES = main Server Kqueue Client Channel Join User Nick Pass
+FILES = main Server Kqueue Client Channel Join User Nick Pass Invite Mode Kick Topic
 
 SRCS = ${addsuffix .cpp, $(FILES)}
 

@@ -6,7 +6,7 @@
 /*   By: ael-khel <ael-khel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 01:58:23 by codespace         #+#    #+#             */
-/*   Updated: 2024/08/28 16:25:35 by ael-khel         ###   ########.fr       */
+/*   Updated: 2024/08/30 00:45:06 by ael-khel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <string>
 
-Channel::Channel( const std::string channelName ) : _name(channelName), _userLimit(0), _inviteOnly(false)
+Channel::Channel( const std::string channelName ) : _name(channelName), _userLimit(0), _inviteOnly(false), _topicRestricted(false)
 {
 
 }
@@ -70,6 +70,11 @@ size_t	Channel::getChannelSize( void ) const
 	return (this->_clients.size());
 }
 
+bool	Channel::getTopicRestricted( void ) const
+{
+	return (this->_topicRestricted);
+}
+
 void	Channel::setTopic( const std::string topic )
 {
 	this->_topic = topic;
@@ -88,6 +93,11 @@ void	Channel::setUserLimit( const size_t userLimit )
 void	Channel::setInviteOnly( const bool inviteOnly )
 {
 	this->_inviteOnly = inviteOnly;
+}
+
+void	Channel::setTopicRestricted( const bool topicRestricted )
+{
+	this->_topicRestricted = topicRestricted;
 }
 
 bool	Channel::isClientInvited( Client* client ) const
@@ -129,7 +139,7 @@ bool	Channel::isClientOperator( Client* client ) const
 
 void	Channel::addOperator( Client* client )
 {
-	if (!isClientJoined(client))
+	if (!isClientOperator(client))
 		this->_operators.push_back(client);
 }
 
@@ -143,11 +153,11 @@ int	Channel::checkChannelModes(Client &client, const std::string &channelName, c
 	if (this->isClientJoined(&client))
 		return (-1);
 	if (this->getInviteOnly() && !this->isClientInvited(&client))
-		return (client.reply(ERR_INVITEONLYCHAN(client.getNickName(), channelName) + "\r\n"), -1);
+		return (client.reply(ERR_INVITEONLYCHAN(client.getNickName(), channelName)), -1);
 	if (!this->getKey().empty() && this->getKey() != channelKey)
-		return (client.reply(ERR_BADCHANNELKEY(client.getNickName(), channelName) + "\r\n"), -1);
+		return (client.reply(ERR_BADCHANNELKEY(client.getNickName(), channelName)), -1);
 	if (this->getUserLimit() > 0 && this->getChannelSize() >= this->getUserLimit())
-		return (client.reply(ERR_CHANNELISFULL(client.getNickName(), channelName) + "\r\n"), -1);
+		return (client.reply(ERR_CHANNELISFULL(client.getNickName(), channelName)), -1);
 	return (0);
 }
 
@@ -163,6 +173,14 @@ const std::string	Channel::getNameList( void ) const
 			namesList += "@";
 		namesList += this->_clients.at(i)->getNickName();
 	}
-	std::cout << 
 	return (namesList);
 }
+
+std::string	Channel::intToString( int number )
+{
+	std::stringstream	oss;
+	oss << number;
+	return (oss.str());
+}
+
+
